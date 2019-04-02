@@ -73,7 +73,9 @@ sleep $1
 - ファイルに実行権限を与える
 
 ```
-chmod 755 /tmp/*
+chmod 755 /tmp/backend*
+
+→後方一致(*),backendから始まるファイルの権限を一気に変更
 
 ```
 
