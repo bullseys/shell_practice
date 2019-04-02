@@ -155,3 +155,8 @@ root      6505  0.0  0.0 107952   360 pts/2    S    03:51   0:00 sleep 500
 root      6506  0.0  0.0 107952   360 pts/2    S    03:51   0:00 sleep 400
 root      6512  0.0  0.0 112728   976 pts/2    S+   03:57   0:00 grep --color=auto sleep
 ```
+
+- このサイトで勉強せよ
+
+- [練習問題](http://g-network.boo.jp/wiki/2018/02/post-879/)
+- [コマンドリファレンス](https://shellscript.sunone.me/)
