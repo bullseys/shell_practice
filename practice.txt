@@ -1,0 +1,67 @@
+課題_1 下記の要件を満たすスクリプトを作成しなさい
+
+（１）スクリプトの第一引数 と第二引数にはファイルのパスのみを指定できる
+（２）引数に与えられた二つのファイルのMD5値を算出して、同じであれば「Same」と表示させて、違うのであれば「not same」と表示させる
+
+#!/bin/bash
+
+  Result1="$(md5sum $1 | awk {'print $1'})"
+  Result2="$(md5sum $2 | awk {'print $1'})"
+
+if [ $Result1 = $Result2 ]; then
+  echo "Same"
+elif [ $Result1 != $Result2 ] 
+  echo "not same"
+fi
+
+---
+課題_2 下記の要件を満たすスクリプトを作成しなさい
+
+（１）スクリプトの第一引数にはディレクトリのパスのみを指定できる
+（２）引数に与えられたディレクトリ内に存在するファイル・ディレクトリの容量の 上位TOP10 のみ表示させる
+
+#!/bin/bash
+
+if [ -d "$1" ]; then
+  du "$1" | sort -nr | head -10
+else
+  echo "you only chose directory to first argument"
+fi
+
+‐‐‐‐‐
+課題_3 下記の要件を満たすスクリプトを作成しなさい
+
+（１）このスクリプトはLinuxユーザの作成とパスワードを設定する仕組みにする
+（２）第一引数にユーザ名を指定でき、パスワードはランダムで設定するものとする
+（３）画面には「ユーザ名：パスワード」 という様式で表示させること
+（４）作成しようとするユーザが既に存在する場合は、「Already exist」と表示させること
+
+#!/bin/bash
+
+awk -F : '{print $1}' /etc/passwd > /tmp/existingUser
+grep -x "$1" /tmp/existingUser
+
+if [ $? != 0 ]; then
+  newPass=$(mkpasswd)
+  useradd "$1"
+  echo "$newPass" | passwd "$1" --stdin
+  echo "["$1"："$newPass"]"
+else echo "Already exist"
+fi
+
+‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐
+※特定ユーザの一括削除をするシェルスクリプト
+→上記の検証過程で作りすぎたため
+
+#!/bin/bash
+
+deleteUser=takeshi
+
+awk -F : '{print $1}' /etc/passwd | grep ${deleteUser} > /tmp/deleteUser
+
+while read LINE
+do
+userdel -r ${LINE}
+done</tmp/deleteUser
+
+→消えました！！！
