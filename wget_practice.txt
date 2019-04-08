@@ -1,0 +1,203 @@
+課題_1  下記の要件を満たすスクリプトを作成しなさい
+
+（１）下記のアクセスログを任意の場所にwgetする
+http://kurata.tk/access.log
+（２）アクセスログからステータス200番以外の行を抜き出す
+（３）抜き出した行からステータス番号だけを抜き出し、それが何回出現しているかカウントする
+（４）出力結果は下記のようにする
+
+1 206
+32 404
+7 304
+
+‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐
+◇完成品
+
+#!/bin/bash
+
+rm /tmp/access.log
+cd /tmp
+wget http://kurata.tk/access.log > /dev/null 2>&1
+awk '{print $9}' /tmp/access.log | grep -v 200 | sort | uniq -c
+
+
+‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐
+◇作成までの流れ
+
+・ステータスの区画を突き止める
+
+[root@localhost tmp]# cat access.log | tail -n 1
+
+111.87.58.94 - - [26/Oct/2018:05:07:36 +0900] "GET /apple-touch-icon.png HTTP/1.1" 404 5 "-" "MobileSafari/604.1 CFNetwork/974.2.1 Darwin/18.0.0"
+
+[root@localhost tmp]# cat access.log | tail -n 5 | awk '{print $9}'
+200
+200
+200
+200
+
+・ステータス行の数だけ表示
+
+[root@localhost tmp]# cat access.log | awk '{print $9}' | wc -l
+537
+
+・ステータスの種類を表示
+
+[root@localhost tmp]# cat access.log | awk '{print $9}' | sort | uniq | wc -l
+7
+
+※200番台以外は
+
+[root@localhost tmp]# cat access.log | awk '{print $9}' | sort | uniq | grep -v 200 | wc -l
+6
+
+・これではなかろうか
+
+[root@localhost tmp]# cat access.log | awk '{print $9}' | grep -v 200 | sort | uniq -c 
+      1 "-"
+      4 403
+    153 404
+    165 405
+      1 502
+      1 http://185.244.25.131/Botnet.mips
+
+→そもそもcatをはさまなくてもよい！
+
+‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐
+
+課題_2 上記課題のアクセスログを使って要件を満たすスクリプトを作成しなさい
+（１）クライアントのIPアドレスがアクセスした行数をカウントする
+（２）出力結果は下記のようにする
+※[]の中の数字はアクセスした行数
+1.2.3.4 [246]
+2.3.4.5 [321]
+3.4.5.6 [12]
+
+‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐
+◇完成品
+
+#!/bin/bash
+
+rm /tmp/access.log
+cd /tmp
+wget http://kurata.tk/access.log > /dev/null 2>&1
+
+awk '{print $1}' access.log | sort | uniq -c >/tmp/log
+
+while read LINE
+do
+
+
+IP=`echo ${LINE} | awk '{print $2}'`
+COUNT=`echo ${LINE} | awk '{print $1}'`
+
+echo "${IP} [${COUNT}]"
+
+done</tmp/log
+
+
+※もしくは
+
+#!/bin/bash
+
+rm /tmp/access.log
+cd /tmp
+wget http://kurata.tk/access.log > /dev/null 2>&1
+
+awk '{print $1}' access.log | sort | uniq -c | awk '{print $2,$1}'
+
+
+‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐
+◇作成までの流れ
+
+・ステータスの区画を突き止める
+
+[root@localhost tmp]# cat access.log | tail -n 1
+
+111.87.58.94 - - [26/Oct/2018:05:07:36 +0900] "GET /apple-touch-icon.png HTTP/1.1" 404 5 "-" "MobileSafari/604.1 CFNetwork/974.2.1 Darwin/18.0.0"
+
+・アクセス数の表示
+[root@localhost tmp]# cat access.log | awk '{print $1}' | sort | wc -l
+537
+
+・ユニークなユーザ数
+[root@localhost tmp]# cat access.log | awk '{print $1}' | sort | uniq | wc -l
+97
+
+・IPアドレスごとのアクセス件数を表示する
+
+[root@localhost tmp]# awk '{print $1}' access.log | sort | uniq -c | head -n 5
+     22 1.75.5.235
+     11 111.87.58.124
+     11 111.87.58.48
+     11 111.87.58.94
+    263 140.116.77.172
+
+→あとは、アクセス数とIPアドレスの順を変えて表示すればいい
+
+[root@localhost tmp]# awk '{print $1}' access.log | wc -l
+
+	
+cat access.log | awk '{print $1}' | sort | uniq -c | head -n 5 | awk {'print $2'}
+
+‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐
+◇失敗例
+
+#!/bin/bash
+
+rm /tmp/access.log
+cd /tmp
+wget http://kurata.tk/access.log > /dev/null 2>&1
+
+Ip=$(cat access.log | awk '{print $1}' | sort | uniq -c | head -n 5 | awk {'print $2'})
+AccessCount==$(cat access.log | awk '{print $1}' | sort | uniq -c | head -n 5 |awk {'print $1'})
+
+echo "${Ip} [${AccessCount}]"
+
+→一つずつ値を代入していくわけではないのでうまく表示できず
+
+
+‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐‐
+
+#!/bin/bash
+
+rm /tmp/access.log
+cd /tmp
+wget http://kurata.tk/access.log > /dev/null 2>&1
+
+awk '{print $1}' access.log | sort | uniq -c >/tmp/log
+
+while read LINE
+do
+
+IP=`awk '{print $2}' ${LINE}`
+COUNT=`awk '{print $1}'${LINE}`
+
+echo "${IP} ${COUNT}"
+
+done</tmp/log
+
+→なぜかファイルを読み込めずエラー
+→「awk '{print $2}' ${LINE}」はファイルを引数にとれていないためエラー（LINEには行の中身が入る）
+
+
+
+#!/bin/bash
+
+rm /tmp/access.log
+cd /tmp
+wget http://kurata.tk/access.log > /dev/null 2>&1
+
+awk '{print $1}' access.log | sort | uniq -c >/tmp/log
+
+while read LINE
+do
+
+
+IP=`echo ${LINE} | awk '{print $2}'`
+COUNT=`echo ${LINE} | awk '{print $1}'`
+
+echo "${IP} [${COUNT}]"
+
+done</tmp/log
+
